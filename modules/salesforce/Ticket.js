@@ -5,19 +5,21 @@
  * @param {Object} data Data record in database
  */
 function Ticket(conn, data) {
-    this.id      = null;
-    this.isFresh = false;
-    this.open    = true;
-    this.contact = null;
-    this.case_id = null;
-    this.conn    = conn;
-    this.body    = "";
+    this.id       = null;
+    this.isFresh  = false;
+    this.open     = true;
+    this.contact  = null;
+    this.case_id  = null;
+    this.conn     = conn;
+    this.body     = "";
+    this.comments = [];
 
     if (data) {
-        this.id = data._id;
-        this.contact = data.contact;
-        this.case_id = data.case_id;
-        this.body    = data.body;
+        this.id       = data._id;
+        this.contact  = data.contact;
+        this.case_id  = data.case_id;
+        this.body     = data.body;
+        this.comments = data.comments;
     }
 };
 
@@ -47,7 +49,7 @@ Ticket.prototype.add = function(message, callback) {
         // Create case with description
         this.conn.sobject("Case").create({
             ContactId: self.contact.Id,
-            Subject: self.title,
+            Subject: title,
             Description: self.body,
         }, function(err, ret) {
             if (err || !ret.success) {
@@ -88,16 +90,21 @@ Ticket.prototype.add = function(message, callback) {
  * @param {Object} message Wrapped message object
  */
 Ticket.prototype.updateBody = function(message) {
+
+    // Convert message date from timestamp
     var date = new Date(message.date * 1000);
+    
+    // Create structure for update
     var prebuilt = [
         this.body,
         "\r\n",
         "\r\n",
         "[UPDATE FROM ", date.toString(), "]",
-        "\n\r",
+        "\r\n",
         message.text
     ];
 
+    // Concatenate predefined data
     this.body = prebuilt.join('');
 };
 

@@ -1,9 +1,12 @@
 // Load .env file
 require('dotenv').load();
 
-var telegram    = require('./modules/telegram'),
+var express     = require('express'),
+    request     = require('request'),
+    telegram    = require('./modules/telegram'),
     salesforce  = require('./modules/salesforce');
 
+var app = express();
 
 // Start salesforce server
 salesforce.start(
@@ -13,98 +16,41 @@ salesforce.start(
     process.env.SF_POLLING_INTERVAL
 );
 
-
 // Start telegram server
-var tg_token = process.env.TELEGRAM_TOKEN;
-
-telegram.start(tg_token, function(err, obj) {
-    if (err) {
-        return console.log("[telegram] error:", err);
-    }
-
-    salesforce.onMessage(obj);
+telegram.start(process.env.TELEGRAM_TOKEN, function() {
+    // Use telegram for sending
+    salesforce.use(telegram);
 });
 
+// Redirect incoming messages to SF
+telegram.onMessage(function(err, message) {
+    salesforce.onMessage(err, message);
+});
 
+// Bind routes
+app.get('/photo/:id', function (req, res) {
+    var file = 'https://api.telegram.org/file/bot' + process.env.TELEGRAM_TOKEN;
+    var url  = 'https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/getFile?file_id=' + req.params.id;
 
+    var generateFileUrl = function(result) {
+        var file_url = file + '/' + result.file_path;
+        res.redirect(file_url);
+    };
 
+    request(url, function(err, response, body) {
+        if (!err && response.statusCode == 200) {
+            var data = JSON.parse(body);
 
+            if (data.ok) {
+                generateFileUrl(data.result)
+            }
+        } else {
+            res.send(400);
+        }
+    })
+});
 
-// var TelegramBot = require('node-telegram-bot-api');
-// var jsforce = require('jsforce');
-
-
-// // TELEGRAMM PART
-// var token = '117553939:AAEfoVs549_WC_j6qOMVdodZu51eAzMlXM0';
-
-// // Setup polling way
-// var bot = new TelegramBot(token, {
-//     polling: true
-// });
-
-// bot.on('text', function(msg) {
-//     console.log(msg);
-//     var chatId = msg.chat.id;
-//     // photo can be: a file path, a stream or a Telegram file_id
-//     //var photo = 'cats.png';
-//     //bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
-
-//     bot.sendMessage(chatId, "Your message was saved");
-// });
-
-
-
-
-// // SALESFORCE PART
-// var conn = new jsforce.Connection();
-// var password = '3kw8ev.oWc6mfNDYsG7HXuFq';
-// var sec_token = 'jeH0F2Nsu6ruyccnw5xFZ7fYm';
-
-
-// // Login
-// conn.login('vladgritsenko+test1@gmail.com', password + sec_token, function(err, res) {
-//     if (err) {
-//         return console.error(err);
-//     }
-
-//     console.log("logined");
-
-//     // conn.query('SELECT Id, Name FROM Account', function(err, res) {
-//     //     if (err) {
-//     //         return console.error(err);
-//     //     }
-//     //     console.log(res);
-//     // });
-
-//     // Get 3 contacts
-//     conn.query('SELECT Id, Name From Contact Limit 3', function(err, res) {
-//         console.log(err);
-//         console.log(res);
-//     });
-
-//     // Create contact
-//     conn.sobject("Contact").create({
-//         FirstName: 'nam2',
-//         LastName: 'lst2',
-//         MobilePhone: 123124124
-//     }, function(err, ret) {
-//         if (err || !ret.success) {
-//             return console.error(err, ret);
-//         }
-//         console.log("Created record id : " + ret.id, ret);
-
-
-//         // Create Case object
-//         conn.sobject("Case").create({
-//             ContactId: ret.id,
-//             Description: 'asdasdasd ad asd asd sad as dasdasdasd as das dsd',
-
-//         }, function(err, ret) {
-//             if (err || !ret.success) {
-//                 return console.error(err, ret);
-//             }
-//             console.log("Created record id : " + ret.id, ret);
-//             // ...
-//         });
-//     });
-// });
+// Start http server
+var server = app.listen(process.env.HTTP_PORT, function () {
+    console.log('[http] server started at port: %s', process.env.HTTP_PORT);
+});

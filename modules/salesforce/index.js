@@ -8,6 +8,7 @@ var jsforce   = require('jsforce'),
 var SF = {
     conn: null,
     _handler: null,
+    telegram: null,
 
     /**
      * Creates connection with salesforce server
@@ -48,20 +49,27 @@ var SF = {
     },
 
     /**
-     * Handles incoming messages from telegram
-     * @param  {Object} message Wrapped incoming message + send handler
+     * Use telegram handler to send messages later
+     * @param {Object} tgHandle Telegram handler
      */
-    onMessage: function(message) {
-        var self = SF;
+    use: function(tgHandle) {
+        SF.telegram = tgHandle;
+    },
 
-        //message.send("You sent: " + message.text);
+    /**
+     * Handles incoming messages from telegram
+     * @param {Error}  err     Possible error
+     * @param {Object} message Wrapped incoming message + send handler
+     */
+    onMessage: function(err, message) {
+        var self = SF;
 
         async.waterfall([
             function(callback) {
                 contacts.find(message, callback);
             },
             function(contact, callback) {
-                tickets.find(contact, callback);
+                tickets.findOrCreate(contact, callback);
             },
             function(ticket, callback) {
                 ticket.add(message, callback);
@@ -82,6 +90,8 @@ var SF = {
      * Every "polling_iterval" seconds selects actual data
      */
     onTick: function() {
+        var self = this;
+
         // Pring api info (usage)
         if (conn.limitInfo.apiUsage && conn.limitInfo.apiUsage.limit) {
             console.log("[salesforce] API calls used/available: ", 
@@ -89,18 +99,46 @@ var SF = {
             );
         }
 
-        // conn.query("SELECT Id, ContactId FROM Case WHERE Status LIKE 'New' ", function(err, res) {
-            
-        //     if (err) {
-        //         return console.log("[salesforce] tick-request error:", err);
-        //     }
+        async.waterfall([
+            function(callback) {
+                // Find all opened tickets
+                tickets.findAll({ open: true }, callback);
+            },
+            function(ticketArray, callback) {
+                // Request updates from SF server
+                tickets.requestUpdates(ticketArray, callback);
+            },
+            function(updates, callback) {
+                // Apply updates to local db
+                tickets.applyUpdates(updates, callback);
+            },
+            function(messages, callback) {
+                if (messages.length > 0 ) { console.log(messages); }
+                // Iterate over each message
+                async.eachSeries(messages, function(message, callback) {
+                    // Send message with update
+                    self.telegram.send(message);
 
-        //     console.log(res);
-        // });
+                    // Prevent from stack overflow
+                    async.setImmediate(function () {
+                        callback();
+                    });
+                }, function(err) {
+                    // Finish and return
+                    callback(null, 'success');
+                });
+            }
+        ], function(err, result) {
+            if (err || result === 'failed') {
+                console.log('[salesforce] update handling error:', err);
+            }
+        });
+
     },
 };
 
 module.exports = {
     start: SF.start,
+    use: SF.use,
     onMessage: SF.onMessage
 };
