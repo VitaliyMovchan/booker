@@ -77,11 +77,13 @@ var SF = {
         ], function (err, result, ticket) {
             if (err || result === 'failed') {
                 if (err.errorCode === "ENTITY_IS_DELETED") {
-                    tickets.findOrCreate(contact, function(ticket) {
-                        ticket.open = false;
-                        tickets.save(ticket, function() {
-                            tickets.findOrCreate(contact, function(ticket) {
-                                ticket.add(message, function() {});
+                    contacts.find(message, function(contact) {
+                        tickets.findOrCreate(contact, function(ticket) {
+                            ticket.open = false;
+                            tickets.save(ticket, function() {
+                                tickets.findOrCreate(contact, function(ticket) {
+                                    ticket.add(message, function() {});
+                                });
                             });
                         });
                     });
