@@ -210,7 +210,7 @@ var tickets = {
      * Save ticket to database
      * @param {Ticket} Ticket object to save
      */
-    save: function(ticket) {
+    save: function(ticket, callback) {
         var self = this;
 
         db.update({ _id: ticket.id }, { $set: {
@@ -219,7 +219,8 @@ var tickets = {
             comments: ticket.comments,
             body: ticket.body
         }}, function(err) {
-            if (err) console.log('[salesforce] error during saving ticket: ', ticket);
+            if (err) return console.log('[salesforce] error during saving ticket: ', ticket);
+            callback();
         });
     },
 }

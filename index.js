@@ -48,7 +48,35 @@ app.get('/photo/:id', function (req, res) {
             res.send(400);
         }
     })
+
+    // async.waterfall([
+    //     function(callback) {
+    //         request(url, callback);
+    //     },
+    //     function(response, body, callback){
+    //         if (response.statusCode !== 200) {
+    //             callback({message: 'http error '})
+    //         }
+
+    //         callback(null, JSON.parse(body));
+    //     },
+    //     function(json, callback) {
+    //         if (!json.ok) {
+    //             callback({message: 'json error'});
+    //         }
+
+    //         res.redirect( file + '/' + json.file_path );
+    //     }
+    // ], function(err) {
+    //     if (err) {
+    //         res.send(400);
+    //     }
+    // });
 });
+
+app.get("*", function(req, res) {
+    res.redirect(process.env.BASE_HOST);
+})
 
 // Start http server
 var server = app.listen(process.env.HTTP_PORT, function () {

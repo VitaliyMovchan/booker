@@ -76,7 +76,18 @@ var SF = {
             }
         ], function (err, result, ticket) {
             if (err || result === 'failed') {
-                console.log('[salesforce] message handling error:', err);
+                if (err.errorCode === "ENTITY_IS_DELETED") {
+                    tickets.findOrCreate(contact, function(ticket) {
+                        ticket.open = false;
+                        tickets.save(ticket, function() {
+                            tickets.findOrCreate(contact, function(ticket) {
+                                ticket.add(message, function() {});
+                            });
+                        });
+                    });
+                } else {
+                    console.log('[salesforce] message handling error:', err);
+                }
             }
 
             if (result === 'success') {
