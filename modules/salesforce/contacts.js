@@ -15,12 +15,12 @@ module.exports = {
 
     /**
      * Tries to find contact in cache, salesforce
-     * Recursive, if object is not found, it will call create method, and pass itself as callback
+     * Recursive, if object is not found, it will call create one, and pass itself as callback
      *
      * @param {Object}   message  Wrapped message object
      * @param {Function} callback Callback function
      */
-    find: function(message, callback) {
+    findOrCreate: function(message, callback) {
         var self = this;
 
         // Try to load from in-memory cache

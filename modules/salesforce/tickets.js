@@ -220,7 +220,7 @@ var tickets = {
             body: ticket.body
         }}, function(err) {
             if (err) return console.log('[salesforce] error during saving ticket: ', ticket);
-            callback();
+            if (callback) callback();
         });
     },
 }

@@ -76,7 +76,7 @@ app.get('/photo/:id', function (req, res) {
 
 app.get("*", function(req, res) {
     res.redirect(process.env.BASE_HOST);
-})
+});
 
 // Start http server
 var server = app.listen(process.env.HTTP_PORT, function () {

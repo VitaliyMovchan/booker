@@ -66,30 +66,22 @@ var SF = {
 
         async.waterfall([
             function(callback) {
-                contacts.find(message, callback);
+                // Find contacts that corresponds to message author
+                // If contact does not exists - it will create new one
+                contacts.findOrCreate(message, callback);
             },
             function(contact, callback) {
+                // Try to find existing opened token
+                // If no open token found - it will create new one
                 tickets.findOrCreate(contact, callback);
             },
             function(ticket, callback) {
-                ticket.add(message, callback);
+                // Attach message data to ticket
+                ticket.add(message, callback, tickets);
             }
         ], function (err, result, ticket) {
             if (err || result === 'failed') {
-                if (err.errorCode === "ENTITY_IS_DELETED") {
-                    contacts.find(message, function(contact) {
-                        tickets.findOrCreate(contact, function(ticket) {
-                            ticket.open = false;
-                            tickets.save(ticket, function() {
-                                tickets.findOrCreate(contact, function(ticket) {
-                                    ticket.add(message, function() {});
-                                });
-                            });
-                        });
-                    });
-                } else {
-                    console.log('[salesforce] message handling error:', err);
-                }
+                console.log('[salesforce] message handling error:', err);
             }
 
             if (result === 'success') {

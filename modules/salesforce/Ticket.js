@@ -29,8 +29,9 @@ function Ticket(conn, data) {
  * 
  * @param {Object}   message  Wrapped message object
  * @param {Function} callback Callback function
+ * @param {Object}   tickets  Tickets object controller reference
  */
-Ticket.prototype.add = function(message, callback) {
+Ticket.prototype.add = function(message, callback, tickets) {
     var self = this;
 
     // Set default body text
@@ -53,7 +54,7 @@ Ticket.prototype.add = function(message, callback) {
             Description: self.body,
         }, function(err, ret) {
             if (err || !ret.success) {
-                callback(err, 'failed');
+                return callback(err, 'failed');
             }
 
             // Save current case id to db
@@ -73,8 +74,24 @@ Ticket.prototype.add = function(message, callback) {
             Description: self.body,
             Status: "escalated"
         }, function(err, ret) {
+
+            // If ticket was deleted, but we dont't know about it
+            if (err && err.errorCode === "ENTITY_IS_DELETED") {
+
+                // Close ticket and save
+                self.open = false;
+                tickets.save( self );
+
+                // Recursive call find or create and add message
+                tickets.findOrCreate(self.contact, function(err, newTicket) {
+                    newTicket.add( message, callback );
+                });
+
+                return;
+            }
+
             if (err || !ret.success) {
-                callback(err, 'failed');
+                return callback(err, 'failed');
             }
 
             // Return 
