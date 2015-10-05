@@ -1,6 +1,12 @@
 var TelegramBot = require('node-telegram-bot-api');
 var bot = null;
 
+var http = require('http');
+var request = require('request');
+
+var fileType = require('file-type');
+var urlRegex = require('url-regex');
+
 module.exports = {
 
     /**
@@ -244,6 +250,28 @@ module.exports = {
     },
 
     send: function(message) {
-        bot.sendMessage(message.chatId, message.text);
+        if (urlRegex({exact: true}).test(message.text)) {
+            var url = message.text;
+
+            http.get(url, function(res) {
+                res.once('data', function(chunk) {
+                    res.destroy();
+
+                    var filetype = fileType(chunk).mime.split("/")[0];
+
+                    switch (filetype) {
+                        case 'image':
+                            bot.sendPhoto(message.chatId, request(url));
+                            break;
+                        default:
+                            bot.sendMessage(message.chatId, message.text);
+                            break;
+                    }
+                });
+            });
+        } else {
+            bot.sendMessage(message.chatId, message.text);
+        }
+
     }
 };
