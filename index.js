@@ -28,7 +28,7 @@ telegram.onMessage(function(err, message) {
 });
 
 // Bind routes
-app.get('/photo/:id', function (req, res) {
+app.get('/:type(photo|video|voice|contact|document|sticker)/:id', function (req, res) {
     var file = 'https://api.telegram.org/file/bot' + process.env.TELEGRAM_TOKEN;
     var url  = 'https://api.telegram.org/bot' + process.env.TELEGRAM_TOKEN + '/getFile?file_id=' + req.params.id;
 
@@ -48,30 +48,11 @@ app.get('/photo/:id', function (req, res) {
             res.send(400);
         }
     })
+});
 
-    // async.waterfall([
-    //     function(callback) {
-    //         request(url, callback);
-    //     },
-    //     function(response, body, callback){
-    //         if (response.statusCode !== 200) {
-    //             callback({message: 'http error '})
-    //         }
-
-    //         callback(null, JSON.parse(body));
-    //     },
-    //     function(json, callback) {
-    //         if (!json.ok) {
-    //             callback({message: 'json error'});
-    //         }
-
-    //         res.redirect( file + '/' + json.file_path );
-    //     }
-    // ], function(err) {
-    //     if (err) {
-    //         res.send(400);
-    //     }
-    // });
+app.get('/location/:latitude/:longitude', function (req, res) {
+    var googleMapsUrl  = 'http://maps.google.de/maps?q=loc:' + req.params.latitude + ',' + req.params.longitude
+    res.redirect(googleMapsUrl);
 });
 
 app.get("*", function(req, res) {
