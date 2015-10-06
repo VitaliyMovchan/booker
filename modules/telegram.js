@@ -257,11 +257,12 @@ module.exports = {
                 return 'audio';
             } else if (typeObject.mime.indexOf("image") > -1) {
                 return 'photo';
-            } else if (typeObject.ext == 'mp4' && typeObject.mime.indexOf("video") > -1) {
-                return 'video';
-            } else if (typeObject.ext == 'ogg' && typeObject.mime.indexOf("audio") > -1) {
-                return 'voice';
             }
+            // else if (typeObject.ext == 'mp4' && typeObject.mime.indexOf("video") > -1) {
+            //     return 'video';
+            // } else if (typeObject.ext == 'ogg' && typeObject.mime.indexOf("audio") > -1) {
+            //     return 'voice';
+            // }
         };
 
         var getFileTypeFromURL = function(url, callback) {
@@ -296,15 +297,15 @@ module.exports = {
                 case 'photo':
                     bot.sendPhoto(message.chatId, request(url));
                     break;
-                case 'video':
-                    bot.sendVideo(message.chatId, request(url));
-                    break;
                 case 'audio':
                     bot.sendAudio(message.chatId, request(url));
                     break;
-                case 'voice':
-                    bot.sendVoice(message.chatId, request(url));
-                    break;
+                // case 'video':
+                //     bot.sendVideo(message.chatId, request(url));
+                //     break;
+                // case 'voice':
+                //     bot.sendVoice(message.chatId, request(url));
+                //     break;
                 default:
                     bot.sendMessage(message.chatId, message.text);
                     break;
