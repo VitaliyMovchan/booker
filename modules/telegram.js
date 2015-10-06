@@ -2,9 +2,10 @@ var TelegramBot = require('node-telegram-bot-api');
 var bot = null;
 
 var http = require('http');
+var https = require('https');
 var request = require('request');
-
 var fileType = require('file-type');
+
 var urlRegex = require('url-regex');
 
 module.exports = {
@@ -250,24 +251,77 @@ module.exports = {
     },
 
     send: function(message) {
-        if (urlRegex({exact: true}).test(message.text)) {
+
+        var getMessageType = function(typeObject) {
+            if (typeObject.ext == 'mp3' && typeObject.mime.indexOf("audio") > -1) {
+                return 'audio';
+            } else if (typeObject.mime.indexOf("image") > -1) {
+                return 'photo';
+            } else if (typeObject.ext == 'mp4' && typeObject.mime.indexOf("video") > -1) {
+                return 'video';
+            } else if (typeObject.ext == 'ogg' && typeObject.mime.indexOf("audio") > -1) {
+                return 'voice';
+            }
+        };
+
+        var getFileTypeFromURL = function(url, callback) {
+
+            var handleData = function(response) {
+                response.once('data', function(chunk) {
+                    response.destroy();
+                    callback(null, fileType(chunk));
+                });
+            }
+
+            if (url.indexOf("http://") > -1) {
+                http.get(url, function(response) {
+                    handleData(response);
+                });
+            } else if (url.indexOf("https://") > -1) {
+                https.get(url, function(response) {
+                    handleData(response);
+                });
+            }
+
+        };
+
+        var isFileUrl = function(text) {
+            return urlRegex({
+                exact: true
+            }).test(text);
+        };
+
+        var sendMessageByType = function(currentMessegeType) {
+            switch (currentMessegeType) {
+                case 'photo':
+                    bot.sendPhoto(message.chatId, request(url));
+                    break;
+                case 'video':
+                    bot.sendVideo(message.chatId, request(url));
+                    break;
+                case 'audio':
+                    bot.sendAudio(message.chatId, request(url));
+                    break;
+                case 'voice':
+                    bot.sendVoice(message.chatId, request(url));
+                    break;
+                default:
+                    bot.sendMessage(message.chatId, message.text);
+                    break;
+            }
+        };
+
+        if (isFileUrl(message.text)) {
             var url = message.text;
 
-            http.get(url, function(res) {
-                res.once('data', function(chunk) {
-                    res.destroy();
+            getFileTypeFromURL(url, function(err, currentFileType) {
+                if (currentFileType !== null) {
+                    var currentMessegeType = getMessageType(currentFileType);
 
-                    var filetype = fileType(chunk).mime.split("/")[0];
-
-                    switch (filetype) {
-                        case 'image':
-                            bot.sendPhoto(message.chatId, request(url));
-                            break;
-                        default:
-                            bot.sendMessage(message.chatId, message.text);
-                            break;
-                    }
-                });
+                    sendMessageByType(currentMessegeType)
+                } else {
+                    bot.sendMessage(message.chatId, message.text);
+                }
             });
         } else {
             bot.sendMessage(message.chatId, message.text);
