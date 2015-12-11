@@ -51,6 +51,7 @@ var tickets = {
                     contact: contact,
                     open: true,
                     body: "",
+                    origin: "Telegram",
                     comments: [],
                     case_id: null
                 }, function(err, data) {

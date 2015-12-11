@@ -13,6 +13,7 @@ function Ticket(conn, data) {
     this.conn     = conn;
     this.body     = "";
     this.comments = [];
+    this.origin   = "";
 
     if (data) {
         this.id       = data._id;
@@ -20,6 +21,7 @@ function Ticket(conn, data) {
         this.case_id  = data.case_id;
         this.body     = data.body;
         this.comments = data.comments;
+        this.origin   = data.origin;
     }
 };
 
@@ -51,6 +53,7 @@ Ticket.prototype.add = function(message, callback, tickets) {
         this.conn.sobject("Case").create({
             ContactId: self.contact.Id,
             Subject: title,
+            Origin: self.origin,
             Description: self.body,
         }, function(err, ret) {
             if (err || !ret.success) {
