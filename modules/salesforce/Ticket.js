@@ -74,8 +74,7 @@ Ticket.prototype.add = function(message, callback, tickets) {
         // Update description, status
         this.conn.sobject("Case").update({
             Id: self.case_id,
-            Description: self.body,
-            Status: "escalated"
+            Description: self.body
         }, function(err, ret) {
 
             // If ticket was deleted, but we dont't know about it
