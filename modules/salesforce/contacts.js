@@ -50,7 +50,7 @@ module.exports = {
 
                     // Create contact, and call recursive search
                     self.create(message, function(err) {
-                        self.find(message, callback);
+                        self.findOrCreate(message, callback);
                     });
 
                 } else {
