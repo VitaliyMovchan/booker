@@ -29,12 +29,12 @@ var SF = {
         conn = new jsforce.Connection();
         conn.login(login, secret, function(err, res) {
 
+            contacts.use(conn);
+            tickets.use(conn);
+
             if (err) {
                 return console.log('[salesforce] error during login:', err);
             }
-
-            contacts.use(conn);
-            tickets.use(conn);
 
             // Start ticker
             self._handler = setInterval(function() {
