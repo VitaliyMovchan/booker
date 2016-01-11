@@ -29,7 +29,7 @@ var SF = {
         conn = new jsforce.Connection();
         conn.login(login, secret, function(err, res) {
 
-            contacts.use(conn);
+            contacts.use(conn, 'Просим прощения, но Telegram по какой-то причине не доставил Ваше сообщение в Booker.Chat: попробуйте повторить сообщение или написать SMS на номер +380 734 392 577! Спасибо! и хорошего дня! :)');
             tickets.use(conn);
 
             if (err) {

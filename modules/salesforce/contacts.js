@@ -2,6 +2,7 @@
 // in external process (any key-value store e.g. memcached)
 var sf_cache = {};
 var conn = null;
+var errMessage = null;
 
 module.exports = {
 
@@ -9,8 +10,12 @@ module.exports = {
      * Use connection for external SF requests
      * @param {Object} conn SF connection
      */
-    use: function(connection) {
+    use: function(connection, errorMessage) {
         conn = connection;
+
+        if (errorMessage) {
+            errMessage = errorMessage;
+        }
     },
 
     /**
@@ -41,7 +46,7 @@ module.exports = {
             })
             .execute(function(err, records) {
                 if (err) {
-                    message.send("We are sorry. There is an error occured. Please, try again later! :)");
+                    message.send(errMessage || "We are sorry. There is an error occured. Please, try again later! :)");
                     return console.log("[salesforce] error getting contacts: ", err);
                 }
 
@@ -82,7 +87,7 @@ module.exports = {
         }, function(err, ret) {
 
             if (err) {
-                message.send("We are sorry. There is an error occured. Please, try again later! :)");
+                message.send(errMessage || "We are sorry. There is an error occured. Please, try again later! :)");
                 return console.log("[salesforce] error creating contact: ", err);
             }
 
