@@ -81,7 +81,7 @@ module.exports = {
         // No contact exists - so create one
         conn.sobject("Contact").create({
             FirstName: message.user.first_name,
-            LastName: message.user.last_name,
+            LastName: message.user.last_name || 'Unknown',
             telegram_id__c: message.id.toString(),
             telegram_username__c: message.user.username
         }, function(err, ret) {
