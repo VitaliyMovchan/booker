@@ -32,8 +32,9 @@ function Ticket(conn, data) {
  * @param {Object}   message  Wrapped message object
  * @param {Function} callback Callback function
  * @param {Object}   tickets  Tickets object controller reference
+ * @param {Object}   contacts Contacts object controller reference
  */
-Ticket.prototype.add = function(message, callback, tickets) {
+Ticket.prototype.add = function(message, callback, tickets, contacts) {
     var self = this;
 
     // Set default body text
@@ -56,6 +57,21 @@ Ticket.prototype.add = function(message, callback, tickets) {
             Origin: self.origin,
             Description: self.body,
         }, function(err, ret) {
+
+            // Check if contact has been deleted
+            if (err && err.errorCode === "ENTITY_IS_DELETED") {
+
+                contacts.refresh(message, function(err, contact) {
+
+                    // Recursive call find or create and add message
+                    tickets.findOrCreate(contact, function(err, newTicket) {
+                        newTicket.add( message, callback, tickets, contacts );
+                    });
+                });
+
+                return;
+            }
+
             if (err || !ret.success) {
                 return callback(err, 'failed');
             }
@@ -71,14 +87,10 @@ Ticket.prototype.add = function(message, callback, tickets) {
         // Add new text to old one
         self.updateBody( message );
 
-        // Update description, status
-        this.conn.sobject("Case").update({
-            Id: self.case_id,
-            Description: self.body
-        }, function(err, ret) {
+        var errorHandle = function(err) {
 
             // If ticket was deleted, but we dont't know about it
-            if (err && err.errorCode === "ENTITY_IS_DELETED") {
+            if (err && (err.errorCode === "ENTITY_IS_DELETED" || err.message === "Record id is not found in record.")) {
 
                 // Close ticket and save
                 self.open = false;
@@ -86,19 +98,33 @@ Ticket.prototype.add = function(message, callback, tickets) {
 
                 // Recursive call find or create and add message
                 tickets.findOrCreate(self.contact, function(err, newTicket) {
-                    newTicket.add( message, callback );
+                    newTicket.add( message, callback, tickets, contacts );
                 });
 
                 return;
             }
 
-            if (err || !ret.success) {
+            if (err) {
                 return callback(err, 'failed');
             }
+        }
 
-            // Return 
-            callback(null, 'success', self);
-        }); 
+        try {
+            // Update description, status
+            this.conn.sobject("Case").update({
+                Id: self.case_id,
+                Description: self.body
+            }, function(err, ret) {
+                if (err) {
+                    errorHandle(err);
+                } else {
+                    callback(null, 'success', self);
+                }
+            });
+
+        } catch (err) {
+            errorHandle(err);
+        }
 
     }
 };

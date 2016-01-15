@@ -77,7 +77,7 @@ var SF = {
             },
             function(ticket, callback) {
                 // Attach message data to ticket
-                ticket.add(message, callback, tickets);
+                ticket.add(message, callback, tickets, contacts);
             }
         ], function (err, result, ticket) {
             if (err || result === 'failed') {

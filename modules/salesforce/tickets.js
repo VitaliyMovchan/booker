@@ -37,7 +37,8 @@ var tickets = {
         var self = this;
 
         // Look through opened tickets
-        db.find({ 
+        db.find({
+            "contact.Id": contact.Id,
             "contact.telegram_id__c": contact.telegram_id__c,
             open: true
         }, function(err, tickets) {

@@ -96,4 +96,12 @@ module.exports = {
         });
     },
 
+
+    refresh: function(message, callback) {
+        // Remove in-memory cached contact
+        delete sf_cache[message.id];
+
+        // Rerequest new contact
+        this.findOrCreate(message, callback);
+    },
 };
