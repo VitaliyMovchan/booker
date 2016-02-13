@@ -8,6 +8,8 @@ var fileType = require('file-type');
 
 var urlRegex = require('url-regex');
 
+var auto = require('./automation');
+
 module.exports = {
 
     /**
@@ -36,9 +38,7 @@ module.exports = {
         bot.on('text', function(msg) {
             var chatId = msg.chat.id;
 
-            console.log(
-                '[telegram] incoming message @' + msg.chat.username + ':', msg.text
-            );
+            console.log('[Telegram] Received new message:', msg.text);
 
             // Trigger callback
             handler(null, {
