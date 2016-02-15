@@ -5,6 +5,7 @@ var expressRoutes = require('./routes');
 var telegram = require('./modules/telegram');
 var salesforce = require('./modules/salesforce');
 var app = express();
+var automation = require('./modules/automation');
 
 // Start salesforce server
 salesforce.start(
@@ -22,7 +23,12 @@ telegram.start(process.env.TELEGRAM_TOKEN, function() {
 
 // Redirect incoming messages to SF
 telegram.onMessage(function(err, message) {
-    salesforce.onMessage(err, message);
+
+	automation(message, function(err, allMessagesString) {
+		message.text = allMessagesString;
+	    salesforce.onMessage(err, message);
+	});
+
 });
 
 expressRoutes.telegram(app, process.env.TELEGRAM_TOKEN);
