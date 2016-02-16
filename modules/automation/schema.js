@@ -5,7 +5,7 @@ module.exports = {
     answers: [{
         text: 'Book a restaurant 🍴',
         next: {
-            question: 'Where wold you like to eat?',
+            question: 'Where would you like to dine?',
             type: 'select',
             answers: [{
                 text: 'Nearby',
@@ -21,15 +21,15 @@ module.exports = {
                             question: 'What is your ideal time and date?',
                             next: {
                                 type: 'final',
-                                question: 'One of our operators will get in touch with you shortly to confirm booking.'
+                                question: 'Thank you for your booking request. One of our ninjas will get in touch with you shortly to confirm booking.'
                             }
                         }
                     }
                 }
             }, {
-                text: 'Provide preferable area',
+                text: 'Choose specific location',
                 next: {
-                    question: 'Please, provide us preferable location or area.',
+                    question: 'Share your location, please.',
                     type: 'location',
                     next: {
                         question: 'What kind of cuisine do you prefer?',
@@ -40,7 +40,7 @@ module.exports = {
                             question: 'What is your ideal time and date?',
                             next: {
                                 type: 'final',
-                                question: 'One of our operators will get in touch with you shortly to confirm booking.'
+                                question: 'Thank you for your booking request. One of our ninjas will get in touch with you shortly to confirm booking.'
                             }
                         }
                     }
@@ -98,7 +98,7 @@ module.exports = {
                     next: {
                         type: 'select-plain',
                         question: 'Nice! When would you like to leave?',
-                        answers: ['Now', 'Provide specific time'],
+                        answers: ['Now', 'Choose specific time'],
                         next: {
                             type: 'plain',
                             question: 'What is your ideal time and date?',
