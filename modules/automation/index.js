@@ -31,7 +31,7 @@ function automation(msg, callback) {
             if (session.getLastQuestion().isFinal()) {
                 // handle ending of the session
                 //:TODO send data to operators send ->
-                callback(null, session.toString());
+                callback(null, session.getMessage());
                 
                 /* old session removing code
                 // and delete session
@@ -46,6 +46,7 @@ function automation(msg, callback) {
         } else {
             // first-time run check
             session.setJustOpened(false);
+            session.addTempdata(msg.text);
 
             // If answer is invalid, send the last question again
             msg.sendCustom(

@@ -1,3 +1,5 @@
+var sessionManager = require('../automation/sessionManager');
+
 /**
  * Ticket object construcor
  * @constructor
@@ -95,6 +97,9 @@ Ticket.prototype.add = function(message, callback, tickets, contacts) {
                 // Close ticket and save
                 self.open = false;
                 tickets.save( self );
+
+                // delete opened user session after ticket is DELETED
+                sessionManager.removeSession( self.contact.telegram_id__c );
 
                 // Recursive call find or create and add message
                 tickets.findOrCreate(self.contact, function(err, newTicket) {

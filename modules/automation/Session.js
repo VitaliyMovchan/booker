@@ -10,6 +10,8 @@ function Session(userId) {
     this.finished = false;
     this.justopened = true;
 
+    this.temp = [];
+
     this.base = buildQuestionTree(schema);
     this.question = this.base;
 
@@ -53,6 +55,14 @@ function Session(userId) {
         }
 
         return text;
+    };
+
+    this.getMessage = function() {
+        return this.temp.join('\n') + '\n\n' + this.toString() + '\n\n';
+    };
+
+    this.addTempdata = function(text) {
+        this.temp.push(text);
     };
 
     this.justOpened = function() {
