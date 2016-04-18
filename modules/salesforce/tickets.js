@@ -2,6 +2,8 @@ var Datastore = require('nedb'),
     async     = require('async'),
     Ticket    = require('./Ticket');
 
+var sessionManager = require('../automation/sessionManager');
+
 // SF Connection cache
 var conn = null;
 
@@ -171,7 +173,7 @@ var tickets = {
                     // Save it
                     self.save(ticket);
 
-                    // Create mesage
+                    // Create message
                     messages.push({
                         chatId: ticket.contact.telegram_id__c,
                         text: comment.CommentBody
@@ -198,6 +200,9 @@ var tickets = {
                 if (exticket.Status === "Closed") {
                     ticket.open = false;
                     self.save(ticket);
+
+                    // delete opened user session after ticket is closed
+                    sessionManager.removeSession( ticket.contact.telegram_id__c );
                 }
 
                 // Prevent from stack overflow

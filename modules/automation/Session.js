@@ -7,6 +7,8 @@ function Session(userId) {
     this.userId = userId;
     this.createdAt = new Date;
     this.questions = [];
+    this.finished = false;
+    this.justopened = true;
 
     this.base = buildQuestionTree(schema);
     this.question = this.base;
@@ -51,6 +53,22 @@ function Session(userId) {
         }
 
         return text;
+    };
+
+    this.justOpened = function() {
+        return this.justopened;
+    };
+
+    this.setJustOpened = function(value) {
+        this.justopened = value;
+    };
+
+    this.isFinished = function() {
+        return this.finished;
+    };
+
+    this.setFinished = function(value) {
+        this.finished = value;
     };
 }
 

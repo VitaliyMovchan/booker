@@ -10,9 +10,13 @@ function automation(msg, callback) {
 
     sessionManager.getSession(msg.id, function(session) {
 
+        // If session has been finished – just proxy incoming message straight to SF 
+        if (session.isFinished()) {
+            return callback(null, msg.text);
+        }
 
         // Check if text provided by user is valid answer for the last question
-        if (session.getLastQuestion().validate(msg.text)) {
+        if (session.getLastQuestion().validate(msg.text) && !session.justOpened()) {
 
             // If answer is valid, save text to the Question object
             session.getLastQuestion().saveAnswer(msg.text);
@@ -28,12 +32,21 @@ function automation(msg, callback) {
                 // handle ending of the session
                 //:TODO send data to operators send ->
                 callback(null, session.toString());
+                
+                /* old session removing code
                 // and delete session
-                sessionManager.removeSession(msg.id);
+                sessionmanager.removesession(msg.id);
                 automation(msg, callback);
-            }
+                */
 
+                // set state state to 'finished'
+                // all new messages will be transfered directly to SF
+                session.setFinished(true);
+            }
         } else {
+            // first-time run check
+            session.setJustOpened(false);
+
             // If answer is invalid, send the last question again
             msg.sendCustom(
                 session.getLastQuestion().getMessage()
