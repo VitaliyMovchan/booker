@@ -59,7 +59,6 @@ Ticket.prototype.add = function(message, callback, tickets, contacts) {
             Subject: title,
             Origin: self.origin,
             Description: self.body,
-            telegram_botId__c: process.env.TELEGRAM_TOKEN.split(':')[0],
         }, function(err, ret) {
 
             // Check if contact has been deleted
