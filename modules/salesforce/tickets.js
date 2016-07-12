@@ -42,7 +42,6 @@ var tickets = {
         db.find({
             "contact.Id": contact.Id,
             "contact.telegram_id__c": contact.telegram_id__c,
-            "telegram_botId__c": process.env.TELEGRAM_TOKEN.split(':')[0],
             open: true
         }, function(err, tickets) {
             if (err) { return callback(err); }
