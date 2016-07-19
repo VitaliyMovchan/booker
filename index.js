@@ -24,10 +24,12 @@ telegram.start(process.env.TELEGRAM_TOKEN, function() {
 // Redirect incoming messages to SF
 telegram.onMessage(function(err, message) {
 
-  automation(message, function(err, allMessagesString) {
-    message.text = allMessagesString;
-    salesforce.onMessage(err, message);
-  });
+  /* Disable automation */
+  // automation(message, function(err, allMessagesString) {
+  //   message.text = allMessagesString;
+  //   salesforce.onMessage(err, message);
+  // });
+  salesforce.onMessage(err, message);
 
 });
 
